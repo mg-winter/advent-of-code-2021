@@ -2,30 +2,67 @@ const fs = require('fs');
 const path = require('path');
 const util = require('../util');
 
-const POSSIBLE_SEGMENTS = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
-const POSSIBLE_SEGMENTS_PATTERN = POSSIBLE_SEGMENTS.map(normalizePatternSegment);
+class Reference {
+    constructor(digitSegments) {
+        this.DIGIT_SEGMENTS = digitSegments;
+        this.POSSIBLE_SEGMENTS = Array.from(new Set(Object.keys(this.DIGIT_SEGMENTS)
+                                                                    .map(k => this.DIGIT_SEGMENTS[k])
+                                                                    .reduce((a, b) => a.concat(b), [])));
+        this.POSSIBLE_SEGMENTS_PATTERN = this.POSSIBLE_SEGMENTS.map(Reference.normalizePatternSegment);
+        this.SEGMENTS_TO_DIGITS = util.reverseDict(this.DIGIT_SEGMENTS, null, Reference.getSegmentKey);
 
-const DIGIT_SEGMENTS = {
-    '0': ['a','b','c','e','f','g'],
-    '1': ['c', 'f'],
-    '2': ['a','c','d','e','g'],
-    '3': ['a','c','d','f','g'],
-    '4': ['b','c','d','f'],
-    '5': ['a','b','d','f','g'],
-    '6': ['a','b','d','e','f','g'],
-    '7': ['a', 'c', 'f'],
-    '8': ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
-    '9': ['a','b','c','d','f','g']
+        this.DIGIT_COUNTS = Reference.getCounts(this.DIGIT_SEGMENTS);
+        this.UNIQUE_COUNTS = Reference.getUniqueCounts(this.DIGIT_COUNTS);
+    }
+
+    static getCounts(segments) {
+        const keys = Object.keys(segments);
+        const res = {};
+        for (const key of keys) {
+            const count = segments[key].length;
+            if (!res[count]) {
+                res[count] = [];
+            }
+            res[count].push(key);
+        }
+        return res;
+    }
+
+    static getUniqueCounts(countMap) {
+        return new Set(Object.keys(countMap).filter(k => countMap[k].length == 1).map(k => parseInt(k)));
+    }
+
+
+    static getSegmentKey(segmentSet) {
+        return segmentSet.join('');
+    }
+
+    static normalizePatternSegment(segment) {
+        return segment.toUpperCase();
+    }
+
+    static normalizeReferenceSegment(segment) {
+        return segment.toLowerCase();
+    }
 }
 
-const SEGMENTS_TO_DIGITS = reverseDict(DIGIT_SEGMENTS, null, getSegmentKey);
+const DIGIT_REFERENCE = new Reference({
+    '0': ['a', 'b', 'c', 'e', 'f', 'g'],
+    '1': ['c', 'f'],
+    '2': ['a', 'c', 'd', 'e', 'g'],
+    '3': ['a', 'c', 'd', 'f', 'g'],
+    '4': ['b', 'c', 'd', 'f'],
+    '5': ['a', 'b', 'd', 'f', 'g'],
+    '6': ['a', 'b', 'd', 'e', 'f', 'g'],
+    '7': ['a', 'c', 'f'],
+    '8': ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+    '9': ['a', 'b', 'c', 'd', 'f', 'g']
+});
 
-const DIGIT_COUNTS = getCounts(DIGIT_SEGMENTS);
-const UNIQUE_COUNTS = getUniqueCounts(DIGIT_COUNTS);
 
 class Display {
-    constructor(ln) {
-        [this.pattern, this.output] = ln.split('|').map(str => normalizePatternSegment(str).trim().split(' ').map(str => str.split('').sort()));
+    constructor(ln, reference) {
+        [this.pattern, this.output] = ln.split('|').map(str => Reference.normalizePatternSegment(str).trim().split(' ').map(str => str.split('').sort()));
         this.knownDigits = {};
         this.knownSegments = {};
         this.realToPatternSegments = {};
@@ -35,23 +72,25 @@ class Display {
         this.remainingPattern = new Set(this.pattern);
         this.remainingOutput = new Set(this.output);
 
+        this.reference = reference;
+
        
-        for (const segment of POSSIBLE_SEGMENTS_PATTERN) {
-            this.segmentCandidates[segment] = new Set(POSSIBLE_SEGMENTS);
+        for (const segment of this.reference.POSSIBLE_SEGMENTS_PATTERN) {
+            this.segmentCandidates[segment] = new Set(this.reference.POSSIBLE_SEGMENTS);
         }
 
-        for (const segment of POSSIBLE_SEGMENTS) {
-            this.realSegmentCandidates[segment] = new Set(POSSIBLE_SEGMENTS_PATTERN);
+        for (const segment of this.reference.POSSIBLE_SEGMENTS) {
+            this.realSegmentCandidates[segment] = new Set(this.reference.POSSIBLE_SEGMENTS_PATTERN);
         }
 
     }
 
-    static isUniqueCount(digit) {
-        return UNIQUE_COUNTS.has(digit.length);
+    isUniqueCount(digit) {
+        return this.reference.UNIQUE_COUNTS.has(digit.length);
     }
 
     getUniqueOutputCount() {
-        return this.output.filter(Display.isUniqueCount).length;
+        return this.output.filter(d => this.isUniqueCount(d)).length;
     }
 
     decode() {
@@ -106,8 +145,8 @@ class Display {
     }
 
     checkUnique(segmentSet) {
-        if (Display.isUniqueCount(segmentSet)) {
-            const digit = Display.getSameCount(segmentSet)[0];
+        if (this.isUniqueCount(segmentSet)) {
+            const digit = this.getSameCount(segmentSet)[0];
             this.recordDigit(segmentSet, digit);
             return digit;
         } else {
@@ -118,7 +157,7 @@ class Display {
     decodeBySegment(segmentSet) {
         const knownSegments = segmentSet.map(segment => this.getRealSegment(segment)).filter(segment => segment != null).sort();
         if (knownSegments.length == segmentSet.length) {
-            const digit = SEGMENTS_TO_DIGITS[getSegmentKey(knownSegments)];
+            const digit = this.reference.SEGMENTS_TO_DIGITS[Reference.getSegmentKey(knownSegments)];
             this.recordDigit(segmentSet, digit);
             return digit;
         } else {
@@ -127,7 +166,7 @@ class Display {
     }
 
     checkCrossover(segmentSet) {
-        const candidateDigits = Display.getSameCount(segmentSet);
+        const candidateDigits = this.getSameCount(segmentSet);
         const notMissingSegments = candidateDigits.filter(d => !this.isMissingAnySegment(segmentSet, d));
         const res = notMissingSegments.length == 1 ? notMissingSegments[0] : null;
 
@@ -142,7 +181,7 @@ class Display {
     isMissingAnySegment(patternSegmentSet, digit) {
 
         const remainingSegments = new Set(patternSegmentSet);
-        for (const realSegment of DIGIT_SEGMENTS[digit]) {
+        for (const realSegment of this.reference.DIGIT_SEGMENTS[digit]) {
             const patternSegment = this.getMatchingSegment(Array.from(remainingSegments), realSegment);
             if (patternSegment == null) {
                 return true;
@@ -164,13 +203,11 @@ class Display {
         return this.getMatchingSegment(patternSegmentSet, realSegment) == null;
     }
 
-
-
     excludeCandidates(segment, notItSegments) {
-        const segmentKey = normalizePatternSegment(segment);
+        const segmentKey = Reference.normalizePatternSegment(segment);
 
         for (const notIt of notItSegments) {
-            const realSegmentKey = normalizeReferenceSegment(notIt);
+            const realSegmentKey = Reference.normalizeReferenceSegment(notIt);
             this.segmentCandidates[segmentKey].delete(realSegmentKey);
             this.realSegmentCandidates[realSegmentKey].delete(segmentKey);
             if (!this.getPatternSegment(realSegmentKey) && this.realSegmentCandidates[realSegmentKey].size == 1) {
@@ -184,16 +221,16 @@ class Display {
     }
 
     recordSegment(segment, realSegment) {
-        const segmentKey = normalizePatternSegment(segment);
-        const realSegmentValue = normalizeReferenceSegment(realSegment);
+        const segmentKey = Reference.normalizePatternSegment(segment);
+        const realSegmentValue = Reference.normalizeReferenceSegment(realSegment);
         this.knownSegments[segmentKey] = realSegmentValue;
         this.realToPatternSegments[realSegmentValue] = segmentKey;
 
         if (this.segmentCandidates[segmentKey].size > 1) {
-            this.excludeCandidates(segmentKey, Display.getOtherSegments([realSegmentValue]));
+            this.excludeCandidates(segmentKey, this.getOtherSegments([realSegmentValue]));
         }
 
-        const otherSegments = Display.getOtherSegments([segmentKey]);
+        const otherSegments = this.getOtherSegments([segmentKey]);
         for (const otherSegment of otherSegments) {
             this.excludeCandidates(otherSegment, [realSegment]);
         }
@@ -204,46 +241,46 @@ class Display {
         this.remainingPattern.delete(segmentSet);
         this.remainingOutput.delete(segmentSet);
         
-        this.knownDigits[getSegmentKey(segmentSet)] = digit;
+        this.knownDigits[Reference.getSegmentKey(segmentSet)] = digit;
 
-        const realSegments = DIGIT_SEGMENTS[digit];
-        const notInDigit = Display.getOtherSegments(realSegments);
+        const realSegments = this.reference.DIGIT_SEGMENTS[digit];
+        const notInDigit = this.getOtherSegments(realSegments);
 
         for (const segment of segmentSet) {
             this.excludeCandidates(segment, notInDigit);
         }
 
-        const notInSegmentSet = Display.getOtherSegments(segmentSet);
+        const notInSegmentSet = this.getOtherSegments(segmentSet);
 
         for (const segment of notInSegmentSet) {
-            this.excludeCandidates(segment, DIGIT_SEGMENTS[digit]);
+            this.excludeCandidates(segment, this.reference.DIGIT_SEGMENTS[digit]);
         }
 
 
     }
 
     getRealSegment(segment) {
-        const segmentKey = normalizePatternSegment(segment);
+        const segmentKey = Reference.normalizePatternSegment(segment);
         return this.knownSegments[segmentKey] ? this.knownSegments[segmentKey] : null;
     }
 
     getPatternSegment(segment) {
-        const segmentKey = normalizeReferenceSegment(segment);
+        const segmentKey = Reference.normalizeReferenceSegment(segment);
         return this.realToPatternSegments[segmentKey] ? this.realToPatternSegments[segmentKey] : null;
     }
 
     getDigit(segmentSet) {
-        const segmentsKey = normalizePatternSegment(getSegmentKey(segmentSet));
+        const segmentsKey = Reference.normalizePatternSegment(Reference.getSegmentKey(segmentSet));
         return this.knownDigits[segmentsKey] ? this.knownDigits[segmentsKey] : null;
     }
 
-    static getOtherSegments(segments) {
-        const segmentCheck = new Set(Array.from(segments).map(s => normalizeReferenceSegment(s)));
-        return POSSIBLE_SEGMENTS.filter(s => !segmentCheck.has(s));
+    getOtherSegments(segments) {
+        const segmentCheck = new Set(Array.from(segments).map(s => Reference.normalizeReferenceSegment(s)));
+        return this.reference.POSSIBLE_SEGMENTS.filter(s => !segmentCheck.has(s));
     }
 
-    static getSameCount(segmentSet) {
-        return DIGIT_COUNTS[segmentSet.length + ''];
+    getSameCount(segmentSet) {
+        return this.reference.DIGIT_COUNTS[segmentSet.length + ''];
     }
 
     getOutputValue() {
@@ -264,9 +301,9 @@ class Display {
     }
 
     getDigitString() {
-        const reversed = reverseDict(this.knownSegments);
+        const reversed = util.reverseDict(this.knownSegments);
 
-        const missingKeys = Display.getOtherSegments(Object.keys(reversed));
+        const missingKeys = this.getOtherSegments(Object.keys(reversed));
         for (const key of missingKeys) {
             reversed[key] = '?';
         }
@@ -292,7 +329,7 @@ function getInput(filePath) {
     try {
         const curFile = process.mainModule.filename;
         const fullPath = path.resolve(curFile, '..', filePath);
-        return fs.readFileSync(fullPath, 'utf-8').toString().split('\n').map(ln => new Display(ln));
+        return fs.readFileSync(fullPath, 'utf-8').toString().split('\n').map(ln => new Display(ln, DIGIT_REFERENCE));
     } catch (ex) {
         console.log(ex);
     }
@@ -308,11 +345,8 @@ day8B();
 
 function test() {
 
-
-   console.log(DIGIT_COUNTS);
-   console.log(UNIQUE_COUNTS);
    const firstTest = getInput('./tests/test-1.txt');
-    console.log(firstTest[0].toString());
+   console.log(firstTest[0].toString());
    console.log(firstTest[0].decode());
    console.log(firstTest[0].toString());
 
@@ -337,51 +371,4 @@ function getAllUniquePatterns(outputLines) {
 function getSumOutputs(outputLines) {
     return outputLines.map(line => line.decode()).reduce((a, b) => a + b);
 }
-
-function getCounts(segments) {
-    const keys = Object.keys(segments);
-    const res = {};
-    for (key of keys) {
-        const count = segments[key].length;
-        if (!res[count]) {
-            res[count] = [];
-        }
-        res[count].push(key);
-    }
-    return res;
-}
-
-function getUniqueCounts(countMap) {
-    return new Set(Object.keys(countMap).filter(k => countMap[k].length == 1).map(k => parseInt(k)));
-}
-
-
-function getSegmentKey(segmentSet) {
-    return segmentSet.join('');
-}
-
-function normalizePatternSegment(segment) {
-    return segment.toUpperCase();
-}
-
-function normalizeReferenceSegment(segment) {
-    return segment.toLowerCase();
-}
-
-
-function reverseDict(dict, keyTransformer, valueTransformer) {
-    const defaultFunc = x => x;
-    const keyTransformerFunc = keyTransformer ? keyTransformer : defaultFunc;
-    const valueTransformerFunc = valueTransformer ? valueTransformer : defaultFunc;
-
-    const res = {};
-
-    const keys = Object.keys(dict);
-    for (const key of keys) {
-        res[valueTransformerFunc(dict[key])] = keyTransformerFunc(key);
-    }
-
-    return res;
-}
-
 

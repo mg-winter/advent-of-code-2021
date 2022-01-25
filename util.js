@@ -8,7 +8,8 @@ module.exports = {
     cartesian: cartesian,
     cartesianArr: cartesianArr,
     arrayFlat: arrayFlat,
-    distinctByStringNoNull: distinctByStringNoNull
+    distinctByStringNoNull: distinctByStringNoNull,
+    reverseDict: reverseDict
 }
 function oneWithSign(number) {
     return number / Math.abs(number);
@@ -79,4 +80,19 @@ function distinctByStringNoNullReducer(acc, newVal) {
             }
         }
     }
+}
+
+function reverseDict(dict, keyTransformer, valueTransformer) {
+    const defaultFunc = x => x;
+    const keyTransformerFunc = keyTransformer ? keyTransformer : defaultFunc;
+    const valueTransformerFunc = valueTransformer ? valueTransformer : defaultFunc;
+
+    const res = {};
+
+    const keys = Object.keys(dict);
+    for (const key of keys) {
+        res[valueTransformerFunc(dict[key])] = keyTransformerFunc(key);
+    }
+
+    return res;
 }
