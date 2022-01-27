@@ -9,7 +9,8 @@ module.exports = {
     cartesianArr: cartesianArr,
     arrayFlat: arrayFlat,
     distinctByStringNoNull: distinctByStringNoNull,
-    reverseDict: reverseDict
+    reverseDict: reverseDict,
+    toDict: toDict
 }
 function oneWithSign(number) {
     return number / Math.abs(number);
@@ -94,5 +95,16 @@ function reverseDict(dict, keyTransformer, valueTransformer) {
         res[valueTransformerFunc(dict[key])] = keyTransformerFunc(key);
     }
 
+    return res;
+}
+
+function toDict(arr, keySelector, valueSelector) {
+    const keySelectorFunc = keySelector ? keySelector : x => x;
+    const valueSelectorFunc = valueSelector ? valueSelector : x => x;
+
+    const res = {};
+    for (const item of arr) {
+        res[keySelectorFunc(item)] = valueSelectorFunc(item);
+    }
     return res;
 }
