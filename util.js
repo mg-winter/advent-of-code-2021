@@ -12,6 +12,7 @@ module.exports = {
     reverseDict: reverseDict,
     toDict: toDict
 }
+
 function oneWithSign(number) {
     return number / Math.abs(number);
 }
