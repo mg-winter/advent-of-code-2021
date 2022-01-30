@@ -139,43 +139,18 @@ const utilBack = require('./util-back');
     }
     {
         const targetPage = page;
-        const element = await waitForSelectors([["aria/[role=\"form\"]","aria/[role=\"textbox\"]"],["#main-input"]], targetPage);
-        await element.evaluate((el, x, y) => { el.scrollTop = y; el.scrollLeft = x; }, 0, 118);
+        const element = await waitForSelectors([["#main-input"]], targetPage);
+        await element.type(input);
     }
-    {
-        const targetPage = page;
-        const element = await waitForSelectors([["aria/[role=\"form\"]","aria/[role=\"textbox\"]"],["#main-input"]], targetPage);
-        const type = await element.evaluate(el => el.type);
-        if (["textarea","select-one","text","url","tel","search","password","number","email"].includes(type)) {
-          await element.type(input);
-        } else {
-          await element.focus();
-          await element.evaluate((el, value) => {
-            el.value = value;
-            el.dispatchEvent(new Event('input', { bubbles: true }));
-            el.dispatchEvent(new Event('change', { bubbles: true }));
-          }, input);
-        }
-    }
-    // {
-    //     const targetPage = page;
-    //     const element = await waitForSelectors([["aria/Calculation parameters","aria/[role=\"spinbutton\"]"],["#num-steps"]], targetPage);
-    //     await element.click({ offset: { x: 113, y: 0.71875} });
-    // }
-    // {
-    //     const targetPage = page;
-    //     const element = await waitForSelectors([["aria/Calculation parameters","aria/[role=\"spinbutton\"]"],["#num-steps"]], targetPage);
-    //     await element.click({ offset: { x: 2, y: 8.71875} });
-    // }
     {
         const targetPage = page;
         const element = await waitForSelectors([["aria/Part A"],["#calculate-a"]], targetPage);
-        await element.click({ offset: { x: 36, y: 15.53125} });
+        await element.click();
     }
     {
         const targetPage = page;
         const element = await waitForSelectors([["aria/Part B"],["#calculate-b"]], targetPage);
-        await element.click({ offset: { x: 26.6875, y: 10.53125} });
+        await element.click();
     }
 
 })();
