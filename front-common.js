@@ -1,4 +1,10 @@
+import { CalculationController } from './front-superclasses.js';
+import { default as util } from './util-v2.js';
 
+//not comprehensive, good enough for now.
+function getValue(el) {
+    return el.value;
+}
 
 (() => {
     function addEvents() {
@@ -8,17 +14,17 @@
 
         const defaultFunc = (param) => param;
 
-        if (solution.stepVisual) {
-            window.addEventListener('step', solution.stepVisual);
-        }
-
         const mainInput = document.getElementById('main-input');
-        const [inputParser, calcParamsReader, visualParamsReader] = ['parseInput', 'readCalcParams', 'readVisualParams'].map(funcName => solution[funcName] ?? defaultFunc);
+        const [modelCreator, calcParamsReader, visualParamsReader] = ['createModel', 'readCalcParams', 'readVisualParams'].map(funcName => solution[funcName] ?? defaultFunc);
 
+        const controllerCreator = solution.createController ?? ((model, parentEl) => new CalculationController(model, parentEl));
         function readInput() {
+
+            const calcParamInputs = Array.from(document.getElementById('calc-params').querySelectorAll('input, textarea, select')).map(el => {return {key: el.id, value: getValue(el)}});
+            const calcParamInputsDict = util.toDict(calcParamInputs, val => val.key, val => val.value);
             return {
-                input: inputParser(mainInput.value),
-                calcParams: calcParamsReader(),
+                model: modelCreator(mainInput.value),
+                calcParams: calcParamsReader(calcParamInputsDict),
                 visualParams: visualParamsReader()
             }
         }
@@ -31,12 +37,13 @@
             document.getElementById(btn.id).addEventListener('click', async (e) => {
                 e.preventDefault();
                 const params = readInput();
-
-                if (solution.initVisual) {
-                    document.getElementById('visuals-cont').innerHTML = solution.initVisual(params);
-                }
-                const res = await clickHandler(params);
+                const res = clickHandler(params);
                 document.getElementById(btn.resId).innerHTML = res + '';
+
+                if (document.getElementById('show-visual').checked) {
+                    const controller = controllerCreator(params.model, document.getElementById('visuals-cont'));
+                    controller.play();
+                }
                
             });
         }
@@ -50,8 +57,3 @@
         window.addEventListener('load', addEvents);
     }
 })();
-
-function dispatchStepEvent(detail) {
-    const event = new CustomEvent('step', {detail: detail});
-    window.dispatchEvent(event);
-}

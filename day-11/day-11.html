@@ -3,9 +3,10 @@
     <head>
         <meta charset="utf-8">
         <title>AOC 2021 Day 11 &mdash; Dumbo Octopus</title>
-        <script src="../util.js"></script>
-        <script src="./day-11-front.js"></script>
-        <script src="../front-common.js"></script>
+        <script src="../util-v2.js" type="module"></script>
+        <script src="../front-superclasses.js" type="module"></script>
+        <script src="./day-11-front.js" type="module"></script>
+        <script src="../front-common.js" type="module"></script>
         <link rel="stylesheet" href="./day-11.css">
         <link rel="stylesheet" href="../common.css">
         
@@ -30,8 +31,8 @@
                 </fieldset>
                 <fieldset  id="calc-buttons">
                     <legend>Calculate</legend>
-                    <button id="calculate-a" name="calculate" value="A">Part A</button>
-                    <button id="calculate-b" name="calculate" value="B">Part B</button>
+                    <button id="calculate-a" name="calculate" value="A" type="button">Part A</button>
+                    <button id="calculate-b" name="calculate" value="B" type="button">Part B</button>
                 </fieldset>
             </form>
             <section aria-labelledby="hd-results" id="results-sect">
@@ -43,7 +44,8 @@
             </section>
             <section aria-labelledby="hd-visuals" id="visuals-sect">
                 <h2 id="hd-visuals">Visuals</h2>
-                <div class="visualsContainer" id="visuals-cont"></div>
+                <button type="button" id="replay-visuals">Replay</button>
+                <div class="visuals-container" id="visuals-cont"></div>
             </section>
         </main>
     </body>
