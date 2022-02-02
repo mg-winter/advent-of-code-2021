@@ -122,11 +122,11 @@ class OctopusMap extends CalculationModel {
     }
 
     step() {
- 
-        this.updateAllPoints(p => this.increaseEnergy(p));
         this.Step++;
-        this.pushState({step: this.Step});
+        this.updateAllPoints(p => this.increaseEnergy(p));
+        this.pushState({step: this.Step, isEnd: false});
         this.checkAllFlashing();
+        this.pushState({ step: this.Step, isEnd: true });
         
 
 
@@ -166,10 +166,14 @@ class OctopusMapController extends CalculationController {
         return `<tr><th scope="row"  id="hd-row-${rowNum}">${rowNum}</th><td></td>${octopusCells}</tr>`;
     }
 
+    static getLevel0Desc(desc) {
+        return desc.isEnd ? 'After all flashes' : 'Increment all octopi';
+    }
+
     getStateDescription(state, index) {
         switch(state.Level) {
             case 0:
-                const actionDesc = state.DescriptionData.step > 0 ? 'Increment all octopi' : 'Initial map';
+                const actionDesc = state.DescriptionData.step > 0 ? OctopusMapController.getLevel0Desc(state.DescriptionData) : 'Initial map';
                 return `Step ${state.DescriptionData.step}. ${actionDesc}.`;
             case 1:
                 const flashedToStr = state.DescriptionData.flashedTo.map(pointObj => `${pointObj.point} to ${pointObj.value}`).join('; ') || 'no other points'

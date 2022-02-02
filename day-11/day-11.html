@@ -18,12 +18,16 @@
             <a href="https://adventofcode.com/2021/day/11" target="puzzle_reqs"><span> Puzzle requirements </span> <span class="visually-hidden"> Advent of code Day 11 - Dumbo Octopus opens new tab</span> </a>
             <form action="#" method="GET" aria-labelledby="hd-input" id="input">
                 <h2 id="hd-input">Input</h2>
+                <p>
                 <label for="main-input">Puzzle input</label>
                 <textarea name="main-input" id="main-input"></textarea>
+                </p>
                 <fieldset id="calc-params">
                     <legend>Calculation parameters</legend>
-                    <label for="num-steps">Number of Steps</label>
+                    <p>
+                    <label for="num-steps">Number of Steps (Part A)</label>
                     <input type="number" id="num-steps" name="num-steps" value="100" />
+                    </p>
                 </fieldset>
                 <fieldset  id="calc-buttons">
                     <legend>Calculate</legend>
@@ -40,13 +44,20 @@
             </section>
             <section aria-labelledby="hd-visuals" id="visuals-sect">
                 <h2 id="hd-visuals">Visuals</h2>
-                <form action="#" method="get" aria-labelledby="hd-visual-controls"></form>
+                <form action="#" method="get" aria-labelledby="hd-visual-controls" id="form-visuals">
                 <h3 id="hd-visual-controls">Visualisation details</h3>
-                    <p id="calc-summary"></p>
+                    <div id="calc-summary-cont">
+                        <p id="calc-summary"></p>
+                    </div>
                     <fieldset id="visual-params">
                         <legend>Visualization parameters</legend>
-                        <label for="timeout">Time between level 0 states(ms)</label>
-                        <input id="timeout" name="timeout" type="number" min="0" step="64" value="1024" />
+                        <p>
+                            <label for="timeout">Time between level 0 states(ms)</label>
+                            <input id="timeout" name="timeout" type="number" min="0" step="64" value="1024" />
+                        <p>
+                            <label for="maxstate">Maximum state level (-1 to show all states)</label>
+                            <input id="maxstate" name="maxstate" type="number" min="-1" step="1" value="-1" />
+                        </p>
                     </fieldset>
                 
                 <fieldset id="visual-controls">
@@ -74,8 +85,8 @@
                 <div class="visuals-container" id="visuals-cont"></div>
                 <h3 id="hd-static-states">Static state list</h3>
                 <button id="btn-static-states">Load static states (may take long time)</button>
-                <p id="static-states-status"></p>
                 <div class="static-states-container" id="static-states-cont"></div>
+                <p id="static-states-status" aria-live="polite"></p>
             </section>
         </main>
     </body>

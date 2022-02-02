@@ -39,6 +39,7 @@ export class CalculationController {
         this.Index = -1;
         this.CurTimeout = null;
         this.DescriptionContainer = null;
+        this.MaxState = visualParams?.maxstate ?? -1;
     }
 
     triggerNext(updateFunc, level) {
@@ -110,8 +111,10 @@ export class CalculationController {
         this.playCurrentIndex();
     }
 
+
     initFirstState() {
-        this.States = this.Model.getHistory();
+        const states = this.MaxState < 0 ? this.Model.getHistory() : this.Model.getHistory().filter(state => state.Level <= this.MaxState);
+        this.States = states;
         this.Index = 0;
         this.renderInitialState();
     }
