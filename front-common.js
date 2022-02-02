@@ -6,6 +6,11 @@ function getValue(el) {
     return el.value;
 }
 
+function getInputDict(containerId) {
+    const inputsMapped = Array.from(document.getElementById(containerId).querySelectorAll('input, textarea, select')).map(el => { return { key: el.id, value: getValue(el) } });
+    return util.toDict(inputsMapped, val => val.key, val => val.value) ;
+}
+
 (() => {
     function addEvents() {
         if (!window.solution) {
@@ -20,16 +25,34 @@ function getValue(el) {
         const controllerCreator = solution.createController ?? ((model, parentEl) => new CalculationController(model, parentEl));
         function readInput() {
 
-            const calcParamInputs = Array.from(document.getElementById('calc-params').querySelectorAll('input, textarea, select')).map(el => {return {key: el.id, value: getValue(el)}});
-            const calcParamInputsDict = util.toDict(calcParamInputs, val => val.key, val => val.value);
+            
+            const calcParamInputsDict = getInputDict('calc-params');
+         
             return {
                 model: modelCreator(mainInput.value),
                 calcParams: calcParamsReader(calcParamInputsDict),
-                visualParams: visualParamsReader()
             }
         }
 
         const buttons = [{ id: "calculate-a", handler: solution.partA, resId: 'result-a' }, { id: "calculate-b", handler: solution.partB, resId: 'result-b' }];
+
+        let curModel = null;
+        let curController = null;
+
+        function updateController() {
+            if (!curModel) {
+                return;
+            }
+
+            const visualParamInputsDict = getInputDict('visual-params');
+            const visualParams = visualParamsReader(visualParamInputsDict);
+            curController = controllerCreator(curModel, document.getElementById('visuals-cont'), visualParams);
+            curController.initFirstState();
+
+            const maxState = curController.States.length - 1;
+            document.getElementById('state-selector-label').innerHTML = `State (total ${maxState})`;
+            document.getElementById('state-selector').setAttribute('max', maxState);        
+        }
 
         for (const btn of buttons) {
             const clickHandler = btn.handler ?? defaultFunc;
@@ -39,14 +62,57 @@ function getValue(el) {
                 const params = readInput();
                 const res = clickHandler(params);
                 document.getElementById(btn.resId).innerHTML = res + '';
+                curModel = params.model;
+                document.getElementById('calc-summary').innerHTML = `Will play ${e.target.innerText}; click another calculation button to reload calculation`;
 
-                if (document.getElementById('show-visual').checked) {
-                    const controller = controllerCreator(params.model, document.getElementById('visuals-cont'));
-                    controller.play();
-                }
-               
+                updateController();
+
             });
         }
+
+        document.getElementById('play-start').addEventListener('click', e => {
+
+            if (!curModel) {
+                return;
+            }
+            updateController();
+            if (curController) {
+                curController.play();
+            }
+            
+        });
+
+        document.getElementById('pause').addEventListener('click', e => {
+            if (!curController) {
+                return;
+            }
+            curController.pause();
+        });
+
+        document.getElementById('resume').addEventListener('click', e => {
+            if (!curController) {
+                return;
+            }
+            curController.resume();
+        });
+
+        document.getElementById('go-to-state').addEventListener('click', e => {
+            if (!curController) {
+                return;
+            }
+            curController.goToState(getValue(document.getElementById('state-selector')));
+        });
+
+        document.getElementById('btn-static-states').addEventListener('click', e => {
+            if (!curController) {
+                return;
+            }
+
+            curController.updateStaticStateHtml(document.getElementById('static-states-cont'), document.getElementById('hd-static-states'), document.getElementById('static-states-status'), );
+
+        })
+
+        
 
 
     }

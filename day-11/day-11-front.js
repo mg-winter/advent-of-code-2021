@@ -10,8 +10,8 @@ class OctopusMap extends CalculationModel {
         this.Height = this.mapArr.length;
         this.Width = this.mapArr[0].length;
         this.NumOctopi = this.Height * this.Width;
-        this.flashing = new Set();
         this.IsSynced = false;
+        this.Step = 0;
     }
 
     isWithinBounds([x, y]) {
@@ -49,6 +49,10 @@ class OctopusMap extends CalculationModel {
         return OctopusMap.isFlashVal(this.getEnergy(point));
     }
 
+    hasFlashed(point) {
+        return OctopusMap.isCompleteFlashVal(this.getEnergy(point));
+    }
+
     updateEnergy([x, y], newLevel) {
         this.mapArr[y][x] = newLevel;
     }
@@ -59,8 +63,12 @@ class OctopusMap extends CalculationModel {
         }
     }
 
+    getAllPoints() {
+        return util.cartesianArr(util.range({ start: 0, end: this.Width - 1, step: 1 }), util.range({ start: 0, end: this.Height - 1, step: 1 }));
+    }
+
     updateAllPoints(updateFunc) {
-        const points= util.cartesianArr(util.range({start: 0, end: this.Width - 1, step: 1}), util.range({start: 0, end: this.Height - 1, step: 1}));
+        const points= this.getAllPoints();
         for (const point of points) {
             updateFunc(point);
         }
@@ -71,18 +79,20 @@ class OctopusMap extends CalculationModel {
     }
 
     increaseEnergy(point) {
-        this.updateEnergy(point, this.getEnergy(point) + 1);
+        this.updateEnergy(point, Math.min(this.getEnergy(point) + 1, 10));
     }
 
     checkFlashing(point) {
-        const pointKey = OctopusMap.pointKey(point);
-        if (this.isFlashing(point) && !this.flashing.has(pointKey)) {
-            this.flashing.add(pointKey);
+        if (this.isFlashing(point) && !this.hasFlashed(point)) {
 
-            const adjacent = this.getAdjacent(point).filter(p => !this.isFlashing(p));
+            const adjacent = this.getAdjacent(point).filter(p => !this.isFlashing(p) && !this.hasFlashed(p));
             for (const p of adjacent) {
                 this.increaseEnergy(p);
             }
+            this.resetPoint(point);
+            this.NumFlashes++;
+
+            this.pushState({step: this.Step,point: point, flashedTo: adjacent.map(point => {return {point: point, value: this.getEnergy(point)}})}, 1);
             for (const p of adjacent) {
                 this.checkFlashing(p);
             }
@@ -93,19 +103,41 @@ class OctopusMap extends CalculationModel {
         this.updateAllPoints(p => this.checkFlashing(p));
     }
 
+    stepAll(numSteps) {
+        this.pushState({step: this.Step});
+        for (let i = 0; i < numSteps; i++) {
+            this.step();
+        }
+        return this.NumFlashes;
+    }
+
+    stepTillSynced(limit=10000) {
+        this.pushState({step: this.Step});
+        let i = 0;
+        while (!this.IsSynced && i < limit) {
+            this.step();
+            i++;
+        }
+        return i;
+    }
+
     step() {
-        this.flashing = new Set();
+ 
         this.updateAllPoints(p => this.increaseEnergy(p));
+        this.Step++;
+        this.pushState({step: this.Step});
         this.checkAllFlashing();
-        this.resetAll();
+        
 
 
 
-        this.NumFlashes += this.flashing.size;
 
-        this.IsSynced = this.flashing.size == this.NumOctopi;
 
-        this.pushState();
+        const allEnergies = this.getAllPoints().map(p => this.getEnergy(p));
+
+        this.IsSynced = new Set(allEnergies).size == 1;
+
+        
 
     }
 
@@ -126,50 +158,58 @@ class OctopusMapController extends CalculationController {
         return `octopus-${rowNum}-${colNum}`;
     }
 
+    static getCellClasses(octopusState) {
+        return `${octopusState.isFlashing ? 'flashing' : ''} energy-${octopusState.value} octopus`;
+    }
     static getRowHtml(row, rowNum) {
-        const octopusCells = row.map((cell, colNum) => `<td id="${OctopusMapController.getOctopusId(rowNum, colNum)}" class="${cell.isFlashing ? 'flashing' : 'not-flashing'}">${cell.value}</td>`).join('');
-        return `<tr><th scope="row" id="hd-row-${rowNum}">${rowNum}</th>${octopusCells}</tr>`;
+        const octopusCells = row.map((cell, colNum) => `<td id="${OctopusMapController.getOctopusId(rowNum, colNum)}" class="${OctopusMapController.getCellClasses(cell)}">${cell.value}</td>`).join('');
+        return `<tr><th scope="row"  id="hd-row-${rowNum}">${rowNum}</th><td></td>${octopusCells}</tr>`;
     }
 
-    getInitialHtml(state) {
-        const colHeadings = util.rangeArr({end: this.Model.Width - 1}).map(i => `<th scope="col">${i}</th>`).join('');
+    getStateDescription(state, index) {
+        switch(state.Level) {
+            case 0:
+                const actionDesc = state.DescriptionData.step > 0 ? 'Increment all octopi' : 'Initial map';
+                return `Step ${state.DescriptionData.step}. ${actionDesc}.`;
+            case 1:
+                const flashedToStr = state.DescriptionData.flashedTo.map(pointObj => `${pointObj.point} to ${pointObj.value}`).join('; ') || 'no other points'
+                return `Step ${state.DescriptionData.step}. ${state.DescriptionData.point} flashed, incremented ${flashedToStr}`;
+            default:
+                return `State ${index}`;
+        }
+    }
+
+    getInitialHtml(state, index) {
+        const colHeadings = util.rangeArr({end: this.Model.Width - 1}).map(i => `<th scope="col" >${i}</th>`).join('');
     
         const rows = state.Value.map(OctopusMapController.getRowHtml).join('');
 
-        return `<table id="octopus-grid" summary="Octopi positions displayed in a ${this.Model.Width} by ${this.Model.Height} grid">`
-                 + `<caption>Octopus grid</caption>`
-                 + `<thead><tr><th scope="col"></th>${colHeadings}</tr></thead>`
+        return `<table cellpadding="0" cellspacing="0" border="0" id="octopus-grid">`
+                 + `<caption aria-live="assertive">${this.getStateDescription(state, index)}</caption>`
+            + `<thead><tr><td></td><th scope="row" >x</th>${colHeadings}</tr><tr><th scope="col" >y</th></tr></thead>`
                + `<tbody>${rows}</tbody>`
                 + `</table>`
     }
 
     renderState(state) {
-        console.log(state)
         const points = util.cartesian(util.range({end: state.Value[0].length - 1}),util.range({end: state.Value.length - 1}));
-        for (const point of points) {
-            this.Cells[point[1]][point[0]].innerHTML = state.Value[point[1]][point[0]].value;
-            this.Cells[point[1]][point[0]].className = state.Value[point[1]][point[0]].isFlashing ? 'flashing' : 'not-flashing';
+        for (const [x, y] of points) {
+            this.Cells[y][x].innerHTML = state.Value[y][x].value;
+            this.Cells[y][x].className = OctopusMapController.getCellClasses(state.Value[y][x]);
         }
     }
 
     setUpDom() {
-        this.Cells = Array.from(this.ParentElement.querySelectorAll('#octopus-grid tbody tr')).map(row => Array.from(row.querySelectorAll('td')));
+        this.Cells = Array.from(this.ParentElement.querySelectorAll('#octopus-grid tbody tr')).map(row => Array.from(row.querySelectorAll('td.octopus')));
+        this.setDescriptionContainer(this.ParentElement.querySelector('table caption'));
     }
 }
 window.solution = {
     partA: function({model, calcParams}) {
-        for (let i = 0; i < calcParams.numSteps; i++) {
-            model.step();
-        }
-        return model.NumFlashes;
+        return model.stepAll(calcParams.numSteps);
     },
     partB: function({model, calcParams}) {
-        let i = 0;
-        while (!model.IsSynced && i < 10000) {
-            model.step();
-            i++;
-        }
-        return i;
+       return model.stepTillSynced();
     },
     createModel: function(str) {
         return new OctopusMap(str);

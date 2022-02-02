@@ -1,7 +1,11 @@
+
+import { default as util } from './util-v2.js';
+
 export class CalculationState {
-    constructor(value, level=0) {
+    constructor(value, descriptionData, level=0) {
         this.Value = value ?? null;
         this.Level = level ?? 0;
+        this.DescriptionData = descriptionData;
     }
 }
 
@@ -15,8 +19,8 @@ export class CalculationModel {
         return [];
     }
 
-    pushState(level=0) {
-        this.StateHistory.push(new CalculationState(this.getState(), level));
+    pushState(descriptionData, level=0) {
+        this.StateHistory.push(new CalculationState(this.getState(), descriptionData, level));
     }
     
     getHistory() {
@@ -27,22 +31,37 @@ export class CalculationModel {
 }
 
 export class CalculationController {
-    constructor(model, parentElement, defaultTimeout=1024) {
+    constructor(model, parentElement, visualParams) {
         this.Model = model;
         this.States = [];
         this.ParentElement = parentElement;
-        this.DefaultTimeout = defaultTimeout;
+        this.DefaultTimeout = visualParams?.timeout ?? 1024;
+        this.Index = -1;
+        this.CurTimeout = null;
+        this.DescriptionContainer = null;
     }
 
     triggerNext(updateFunc, level) {
-        window.setTimeout(updateFunc, this.DefaultTimeout >> level);
+        this.pause();
+
+        this.CurTimeout = window.setTimeout(updateFunc, this.DefaultTimeout);
+    }
+
+    isPlaying() {
+        return util.isNullOrUndefined(this.CurTimeout);
+    }
+
+    pause() {
+        if (this.CurTimeout) {
+            window.clearTimeout(this.CurTimeout);
+        }
     }
 
      renderState(state) {
 
     }
 
-    getInitialHtml() {
+    getInitialHtml(state, index) {
 
     }
 
@@ -51,25 +70,81 @@ export class CalculationController {
     }
 
      renderInitialState() {
-        this.ParentElement.innerHTML = this.getInitialHtml(this.States[0]);
+        this.ParentElement.innerHTML = this.getInitialHtml(this.States[this.Index], this.Index);
         this.setUpDom();
     }
 
-    playState(stateIndex) {
-        
-         this.renderState(this.States[stateIndex]);
+    renderCurrentIndex() {
+        this.renderState(this.States[this.Index]);
+    }
 
-        const nextIndex = stateIndex + 1;
+    getStateDescription(state) {
+        return `State ${this.Index}`;
+    }
 
-        if (nextIndex < this.States.length) {
-            this.triggerNext(() => this.playState(nextIndex), this.States[nextIndex].level);
+    setDescriptionContainer(el) {
+        el.setAttribute('aria-live', 'polite');
+        this.DescriptionContainer = el;
+    }
+    getDescriptionContainer() {
+        return this.DescriptionContainer;
+    }
+
+    updateDescription(descriptionHtml) {
+        this.getDescriptionContainer().innerHTML = descriptionHtml;
+    }
+
+    playCurrentIndex() {
+        this.renderCurrentIndex();
+        this.updateDescription(this.getStateDescription(this.States[this.Index]));
+
+        if (this.Index < this.States.length - 1) {
+            this.Index++;
+            this.triggerNext(() => this.playCurrentIndex(), this.States[this.Index].level);
         }
         
     }
 
      play() {
-        this.States = this.Model.getHistory();
-        this.renderInitialState();
-        this.playState(0);
+        this.initFirstState();
+        this.playCurrentIndex();
     }
+
+    initFirstState() {
+        this.States = this.Model.getHistory();
+        this.Index = 0;
+        this.renderInitialState();
+    }
+
+    resume() {
+        this.playCurrentIndex();
+    }
+
+    goToState(index) {
+        if (index >= 0 && index < this.States.length) {
+            this.pause();
+            this.Index = index;
+            this.renderInitialState();
+        }
+    }
+
+    addStateHtml(index, parentEl, statusEl) {
+        if (index >= this.States.length) {
+            statusEl.innerHTML = "Loaded static state list";
+        } else {
+            const html = this.getInitialHtml(this.States[index], index);
+            parentEl.insertAdjacentHTML('beforeend',`<li>${html}</li>`);
+            window.setTimeout(() => {this.addStateHtml(index + 1, parentEl, statusEl)}, 10);
+        }
+    }
+
+    updateStaticStateHtml(staticStatesParentEl, parentHeadingEl, statusEl) {
+        staticStatesParentEl.innerHTML = `<ol aria-labelledby="${parentHeadingEl.id}" aria-describedby="${statusEl.id}" class="static-state-list"></ol>`;
+        statusEl.innerHTML = 'Loading static state list...';
+        this.addStateHtml(0, staticStatesParentEl.querySelector('ol'), statusEl);
+    }
+
+    
+
+
 }

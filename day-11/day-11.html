@@ -2,6 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>AOC 2021 Day 11 &mdash; Dumbo Octopus</title>
         <script src="../util-v2.js" type="module"></script>
         <script src="../front-superclasses.js" type="module"></script>
@@ -24,11 +25,6 @@
                     <label for="num-steps">Number of Steps</label>
                     <input type="number" id="num-steps" name="num-steps" value="100" />
                 </fieldset>
-                <fieldset id="visuals-params">
-                    <legend>Visualization parameters</legend>
-                    <label class="toggle-label" for="show-visual">Show visual</label>
-                    <input type="checkbox" checked="checked" id="show-visual" name="show-visual" />
-                </fieldset>
                 <fieldset  id="calc-buttons">
                     <legend>Calculate</legend>
                     <button id="calculate-a" name="calculate" value="A" type="button">Part A</button>
@@ -44,8 +40,42 @@
             </section>
             <section aria-labelledby="hd-visuals" id="visuals-sect">
                 <h2 id="hd-visuals">Visuals</h2>
-                <button type="button" id="replay-visuals">Replay</button>
+                <form action="#" method="get" aria-labelledby="hd-visual-controls"></form>
+                <h3 id="hd-visual-controls">Visualisation details</h3>
+                    <p id="calc-summary"></p>
+                    <fieldset id="visual-params">
+                        <legend>Visualization parameters</legend>
+                        <label for="timeout">Time between level 0 states(ms)</label>
+                        <input id="timeout" name="timeout" type="number" min="0" step="64" value="1024" />
+                    </fieldset>
+                
+                <fieldset id="visual-controls">
+                    <legend>Animation controls</legend>
+                    <ul id="animation-action-buttons" aria-label="Animation action buttons" class="button-bar">
+                        <li>
+                    <button type="button" id="play-start">Play from start</button>
+                        </li><li>
+                    <button type="button" id="resume">Resume</button>
+                    </li>
+                    <li>
+                    <button type="button" id="pause">Pause</button>
+                    </li>
+                    </ul>
+                    <fieldset id="state-selector-cont">
+                        <legend>State selector</legend>
+                    <label for="state-selector" id="state-selector-label">State</label>
+                    <input type="number" id="state-selector" name="state-selector" value="0" min="0" />
+                    <button type="button" id="go-to-state">Go to state</button>
+                    </fieldset>
+                </fieldset>
+                </form>
+                
+                <h3>Animation</h3>
                 <div class="visuals-container" id="visuals-cont"></div>
+                <h3 id="hd-static-states">Static state list</h3>
+                <button id="btn-static-states">Load static states (may take long time)</button>
+                <p id="static-states-status"></p>
+                <div class="static-states-container" id="static-states-cont"></div>
             </section>
         </main>
     </body>

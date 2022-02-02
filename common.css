@@ -1,4 +1,8 @@
 
+body {
+    font-family: sans-serif;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -12,6 +16,10 @@
     width: 0;
     top: -100%;
     left: -100%;
+}
+
+main {
+    padding-bottom: 2rem;
 }
 
 legend, label {
@@ -45,3 +53,27 @@ label:not(.toggle-label), textarea, input[type=text], input[type=number], select
     grid-row: 3;
 }
 
+#visuals-sect {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+td, th {
+    border: none;
+    margin: 0;
+}
+
+.button-bar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    list-style-type: none;
+}
+
+.button-bar li {
+    margin-right: 1rem;
+}

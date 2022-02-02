@@ -1,5 +1,6 @@
 
 const util = {
+    isNullOrUndefined: isNullOrUndefined,
     oneWithSign: oneWithSign,
     getOverlapRange: getOverlapRange,
     range: range,
@@ -17,6 +18,9 @@ function oneWithSign(number) {
     return number / Math.abs(number);
 }
 
+function isNullOrUndefined(obj) {
+    return obj !== null && typeof(obj) != 'undefined';
+}
 function getOverlapRange(thisRange, otherRange) {
     return [Math.max(thisRange[0], otherRange[0]), Math.min(thisRange[1], otherRange[1])];
 }
