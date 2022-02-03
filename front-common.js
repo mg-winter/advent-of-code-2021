@@ -60,8 +60,11 @@ function getInputDict(containerId) {
             document.getElementById(btn.id).addEventListener('click', async (e) => {
                 e.preventDefault();
                 const params = readInput();
+                const timeBefore = new Date();
                 const res = clickHandler(params);
-                document.getElementById(btn.resId).innerHTML = res + '';
+                const timeAfter = new Date();
+                const runTime = timeAfter - timeBefore;
+                document.getElementById(btn.resId).innerHTML = `${res} (${runTime} ms)`;
                 curModel = params.model;
                 document.getElementById('calc-summary').innerHTML = `Will play ${e.target.innerText}; click another calculation button to reload calculation`;
 

@@ -35,7 +35,7 @@ export class CalculationController {
         this.Model = model;
         this.States = [];
         this.ParentElement = parentElement;
-        this.DefaultTimeout = visualParams?.timeout ?? 1024;
+        this.DefaultTimeout = visualParams?.timeout ?? 3000;
         this.Index = -1;
         this.CurTimeout = null;
         this.DescriptionContainer = null;
@@ -58,7 +58,11 @@ export class CalculationController {
         }
     }
 
-     renderState(state) {
+    transitionIn(parentElement, newElement) {
+
+    }
+
+    renderState(state) {
 
     }
 
