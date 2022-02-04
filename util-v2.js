@@ -11,7 +11,8 @@ const util = {
     cartesianArr: cartesianArr,
     distinctByStringNoNull: distinctByStringNoNull,
     reverseDict: reverseDict,
-    toDict: toDict
+    toDict: toDict,
+    getCountsDict: getCountsDict
 }
 
 function oneWithSign(number) {
@@ -111,5 +112,14 @@ function toDict(arr, keySelector, valueSelector) {
     return res;
 }
 
-
+function getCountsDict(arr) {
+    const res = {};
+    for (const item of arr) {
+        if (!res[item]) {
+            res[item] = 0;
+        }
+        res[item] = res[item] + 1;
+    }
+    return res;
+}
 export default util;

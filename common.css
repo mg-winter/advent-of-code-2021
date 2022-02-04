@@ -106,3 +106,6 @@ td, th {
     align-items: center;
 }
 
+.no-visuals #visuals-sect {
+    display: none;
+}

@@ -17,6 +17,10 @@ function getInputDict(containerId) {
             return;
         }
 
+        if (!window.solution.hasVisual) {
+            document.body.classList.add('no-visuals');
+        }
+
         const defaultFunc = (param) => param;
 
         const mainInput = document.getElementById('main-input');
