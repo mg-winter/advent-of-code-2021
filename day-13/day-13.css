@@ -1,0 +1,16 @@
+/* .flashing {
+    background-color: #000000;
+    color: #FFFFFF;
+    transition-property: background-color, color;
+    transition-duration: 0.3s;
+}
+
+:not(.flashing) {
+    transition-property: background-color, color;
+    transition-duration: 0.3s;
+} */
+
+svg {
+    height: 50vw;
+    width: 50vw;
+}

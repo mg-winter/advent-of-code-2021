@@ -12,7 +12,10 @@ const util = {
     distinctByStringNoNull: distinctByStringNoNull,
     reverseDict: reverseDict,
     toDict: toDict,
-    getCountsDict: getCountsDict
+    reduceToAggregateDict: reduceToAggregateDict,
+    getCountsDict: getCountsDict,
+    gettArraysDict: getArraysDict,
+    distinct: distinct
 }
 
 function oneWithSign(number) {
@@ -102,7 +105,7 @@ function reverseDict(dict, keyTransformer, valueTransformer) {
 }
 
 function toDict(arr, keySelector, valueSelector) {
-    const keySelectorFunc = keySelector ? keySelector : x => x;
+    const keySelectorFunc = keySelector ? keySelector : x => x ? x.toString() : '';
     const valueSelectorFunc = valueSelector ? valueSelector : x => x;
 
     const res = {};
@@ -112,14 +115,35 @@ function toDict(arr, keySelector, valueSelector) {
     return res;
 }
 
-function getCountsDict(arr) {
+function reduceToAggregateDict(arr, valueAggregator, initialValue, keySelector) {
+    const keySelectorFunc = keySelector ?? (k => k);
     const res = {};
     for (const item of arr) {
-        if (!res[item]) {
-            res[item] = 0;
+        const key = keySelectorFunc(item);
+        if (!res[key]) {
+            res[key] = initialValue;
         }
-        res[item] = res[item] + 1;
+        res[key] = valueAggregator(res[key], item);
     }
     return res;
 }
+
+function getCountsDict(arr, keySelector) {
+    return reduceToAggregateDict(arr, (val, item) => val + 1, 0, keySelector);
+}
+
+function getArraysDict(arr, keySelector) {
+    return reduceToAggregateDict(arr, (items, item) => [...items, item], [], keySelector);
+} 
+
+function distinct(arr, primitiveConverter, valuePicker) {
+    const primitiveConverterFunc = primitiveConverter ?? (x => x ? x.toString() : '');
+    const valuePickerFunc = valuePicker ?? (values => values[0]);
+
+    const arraysDict = getArraysDict(arr, primitiveConverterFunc);
+
+    return Object.keys(arraysDict).map(k => valuePickerFunc(arraysDict[k]));
+
+}
+
 export default util;
