@@ -54,7 +54,7 @@ function getInputDict(containerId) {
             curController.initFirstState();
 
             const maxState = curController.States.length - 1;
-            document.getElementById('state-selector-label').innerHTML = `State (total ${maxState})`;
+            document.getElementById('state-selector-label').innerHTML = `State (max ${maxState})`;
             document.getElementById('state-selector').setAttribute('max', maxState);        
         }
 

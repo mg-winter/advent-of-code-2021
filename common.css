@@ -26,6 +26,10 @@ h2 {
     text-align: center;
 }
 
+h3 {
+    text-align: center;
+}
+
 legend, label {
     font-weight: bold;
 }
@@ -108,4 +112,10 @@ td, th {
 
 .no-visuals #visuals-sect {
     display: none;
+}
+
+.fade-out {
+    opacity: 0;
+    transition-duration: 1000ms;
+    transition-property: opacity;
 }

@@ -1,4 +1,4 @@
-
+const MAX_TIMEOUT = 2147483647;
 const util = {
     isNullOrUndefined: isNullOrUndefined,
     oneWithSign: oneWithSign,
@@ -15,7 +15,11 @@ const util = {
     reduceToAggregateDict: reduceToAggregateDict,
     getCountsDict: getCountsDict,
     gettArraysDict: getArraysDict,
-    distinct: distinct
+    distinct: distinct,
+    waitForEvent: waitForEvent,
+    waitForTimeout: waitForTimeout,
+    waitForPoll: waitForPoll,
+    waitForAnimationFrame: waitForAnimationFrame
 }
 
 function oneWithSign(number) {
@@ -144,6 +148,83 @@ function distinct(arr, primitiveConverter, valuePicker) {
 
     return Object.keys(arraysDict).map(k => valuePickerFunc(arraysDict[k]));
 
+}
+
+function waitForEvent(target, eventName, maxWaitMs=2147483647) {
+    return new Promise((resolve, reject) => {
+        let isResolved = false;
+
+        const eventHandler = e => {
+            
+            isResolved = true;
+            if (rejectTimeout) {
+                clearTimeout(rejectTimeout);
+            }
+            target.removeEventListener(eventName, eventHandler);
+
+            resolve({ event: e });
+        };
+
+        const rejectTimeout = setTimeout(() => {
+            if (!isResolved) {
+                target.removeEventListener(eventName, eventHandler);
+
+                resolve({event: null});
+            }
+        }, maxWaitMs);
+
+        target.addEventListener(eventName, eventHandler);
+        
+    });
+}
+    
+function waitForTimeout(timeoutMS) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => resolve(), timeoutMS);
+    });
+}
+
+function waitForAnimationFrame(timeoutMS) {
+    return new Promise((resolve, reject) => {
+        requestAnimationFrame(() => resolve());
+    });
+}
+
+
+function getResolvedCheckerFunc(resolvedChecker, maxPolls) {
+    if (maxPolls < 0) {
+        return (i) => {
+            const isResolved = resolvedChecker();
+            return {
+                isFinished: isResolved,
+                isResolved: isResolved
+            }
+        };
+    } else {
+        return (i) => {
+            const isResolved = resolvedChecker();
+            return {
+                isResolved: isResolved,
+                isFinished: isResolved || i > maxPolls,
+            }
+        }
+    }
+}
+async function waitForPoll(resolvedChecker, timeoutMS = 250, maxPolls = -1) {
+    const resolvedCheckerFunc = getResolvedCheckerFunc(resolvedChecker, maxPolls);
+    
+        let i = 0;
+        let finishedCheck = resolvedCheckerFunc(i);
+        while(!finishedCheck.isFinished) {
+            await waitForTimeout(timeoutMS);
+            i++;
+            finishedCheck = resolvedCheckerFunc(i);
+        }
+        if (finishedCheck.isResolved) {
+            return true;
+        } else {
+            return false;
+        }
 }
 
 export default util;

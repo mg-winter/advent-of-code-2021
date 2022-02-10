@@ -62,7 +62,13 @@ export class CalculationController {
 
     }
 
-    renderState(state) {
+    static async transitionOut(el, transitionClass='fade-out') {
+        await CalculationController.completeTransition(el, transitionClass);
+        el.remove(); 
+        return el;   
+    }
+
+    async renderState(state) {
 
     }
 
@@ -79,8 +85,8 @@ export class CalculationController {
         this.setUpDom();
     }
 
-    renderCurrentIndex() {
-        this.renderState(this.States[this.Index]);
+    async renderCurrentIndex() {
+        await this.renderState(this.States[this.Index]);
     }
 
     getStateDescription(state) {
@@ -99,20 +105,24 @@ export class CalculationController {
         this.getDescriptionContainer().innerHTML = descriptionHtml;
     }
 
-    playCurrentIndex() {
-        this.renderCurrentIndex();
+    async playCurrentIndex() {
+        await this.renderCurrentIndex();
         this.updateDescription(this.getStateDescription(this.States[this.Index]));
+        this.cueNextIndex();
+    }
 
+    cueNextIndex() {
         if (this.Index < this.States.length - 1) {
             this.Index++;
             this.triggerNext(() => this.playCurrentIndex(), this.States[this.Index].level);
         }
-        
     }
 
      play() {
-        this.initFirstState();
-        this.playCurrentIndex();
+         if (this.Index != 0) {
+            this.initFirstState();
+         }
+        this.cueNextIndex();
     }
 
 
@@ -124,7 +134,7 @@ export class CalculationController {
     }
 
     resume() {
-        this.playCurrentIndex();
+        this.cueNextIndex();
     }
 
     goToState(index) {
@@ -151,6 +161,39 @@ export class CalculationController {
         this.addStateHtml(0, staticStatesParentEl.querySelector('ol'), statusEl);
     }
 
+    static getChangeFraction(t) {
+        return t * t * (3 - (2 * t));
+    }
+
+    static getAnimationSteps(from, to, numSteps) {
+        const diff = to - from;
+        const step = 1 / numSteps;
+        const timeSteps = util.rangeArr({start: step, end: step * (numSteps - 1), step: step});
+        return [from, ...timeSteps.map(t => from + (CalculationController.getChangeFraction(t) * diff)), to];
+    }
+
+
+    static async *animateValues(fromToPairs, numSteps) {
+        const pairStepLists = fromToPairs.map(([from, to]) => CalculationController.getAnimationSteps(from, to, numSteps));
+        const byTimeStep = pairStepLists[0].map((val, i) => pairStepLists.map(list => list[i]));
+        for (const stepValues of byTimeStep) {
+            await util.waitForAnimationFrame();
+            yield stepValues;
+        }
+    }
+
+    static async waitForTransition(el) {
+        return await util.waitForEvent(el, 'transitionend');
+    }
+
+    static startTransition(el, transitionClass) {
+        setTimeout(() => el.classList.add(transitionClass), 1);
+    }
+
+    static async completeTransition(el, transitionClass) {
+        CalculationController.startTransition(el, transitionClass);
+        return await CalculationController.waitForTransition(el);
+    }
     
 
 
