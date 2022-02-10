@@ -178,7 +178,9 @@ class OrigamiPageController extends CalculationController {
     getPointSvg(point, pointClass) {
         const pointClassVal = pointClass ?? 'origami-dot';
         const [cx, cy] = point.map(c => this.getDotCenter(c));
-        return `<circle cx="${cx}" data-point="${point}" cy="${cy}" r="${this.Radius}" class="${pointClassVal}" vector-effect="non-scaling-stroke" />`;
+        return `<circle cx="${cx}"  cy="${cy}" r="${this.Radius}" class="${pointClassVal}-inner" vector-effect="non-scaling-stroke" />`
+                + `<circle cx="${cx}"  cy="${cy}" r="${this.Radius}" class="${pointClassVal}" vector-effect="non-scaling-stroke" />`;
+            
     }
 
     getPointsSvg(points, pointClass) {

@@ -41,6 +41,10 @@ svg {
     stroke-width: 1;
 }
 
+.origami-dot-inner {
+    display: none;
+}
+
 .fold-line {
     stroke: #AAAAAA;
     stroke-width: 1;
@@ -74,4 +78,10 @@ svg {
     fill: transparent;
     stroke: #000099;
     stroke-width: 1;
+}
+
+.future-move-dot-inner {
+    fill: transparent;
+    stroke: #FFFFFF;
+    stroke-width: 3;
 }
