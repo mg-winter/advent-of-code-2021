@@ -3,6 +3,8 @@ const util = {
     isNullOrUndefined: isNullOrUndefined,
     oneWithSign: oneWithSign,
     getOverlapRange: getOverlapRange,
+    escapeRegex: escapeRegex,
+    getNumOccurrences: getNumOccurrences,
     range: range,
     rangeArr: rangeArr,
     unorderedPairs: unorderedPairs,
@@ -10,8 +12,10 @@ const util = {
     cartesian: cartesian,
     cartesianArr: cartesianArr,
     distinctByStringNoNull: distinctByStringNoNull,
+    toKeyValuePairs: toKeyValuePairs,
     reverseDict: reverseDict,
     toDict: toDict,
+    mergeDicts: mergeDicts,
     reduceToAggregateDict: reduceToAggregateDict,
     getCountsDict: getCountsDict,
     gettArraysDict: getArraysDict,
@@ -31,6 +35,24 @@ function isNullOrUndefined(obj) {
 }
 function getOverlapRange(thisRange, otherRange) {
     return [Math.max(thisRange[0], otherRange[0]), Math.min(thisRange[1], otherRange[1])];
+}
+
+/** https://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript */
+function escapeRegex(string) {
+    return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
+
+/*https://stackoverflow.com/questions/4009756/how-to-count-string-occurrence-in-string*/
+function getNumOccurrences(str, substr) {
+    if (!str || !substr) {
+        return 0;
+    }
+
+    const re = new RegExp(escapeRegex(substr), 'g');;
+    const matches = str.match(re);
+
+    return (matches || []).length;
 }
 
 function* range({ start = 0, end = 0, step = 1 }) {
@@ -92,6 +114,9 @@ function distinctByStringNoNullReducer(acc, newVal) {
         }
     }
 }
+function toKeyValuePairs(dict) {
+    return Object.keys(dict).map(k => {return {key: k, value: dict[k]}});
+}
 
 function reverseDict(dict, keyTransformer, valueTransformer) {
     const defaultFunc = x => x;
@@ -106,6 +131,18 @@ function reverseDict(dict, keyTransformer, valueTransformer) {
     }
 
     return res;
+}
+
+/** unlike JS spread operator, does something to values instead of just
+ * using the last one
+ */
+function mergeDicts(dicts, valueMerger, initialValue=[], keySelector) {
+    const valueMergerFunc = valueMerger ? ((values, pair) => valueMerger(values, pair.value)) : ((values, pair) => [...values, pair.value]);
+    const keySelectorFunc = keySelector ? pair => keySelector(pair.key) : pair => pair.key;
+    
+    const kvPairs = dicts.map(dict => toKeyValuePairs(dict)).flat(1);
+    return reduceToAggregateDict(kvPairs, valueMergerFunc,  initialValue, keySelectorFunc);
+
 }
 
 function toDict(arr, keySelector, valueSelector) {
