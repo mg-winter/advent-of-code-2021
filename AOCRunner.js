@@ -6,7 +6,7 @@ const utilBack = require('./util-back');
     const args = process.argv.slice(2);
     const day = args[0];
 
-    const input = args[1] ? utilBack.getTestInput(day, args[1]) : utilBack.getMainInput(day);
+    const puzzleInput = args[1] ? utilBack.getTestInput(day, args[1]) : utilBack.getMainInput(day);
 
     const browser = await puppeteer.launch({headless: false});
   
@@ -140,7 +140,7 @@ const utilBack = require('./util-back');
     {
         const targetPage = page;
         const element = await waitForSelectors([["#main-input"]], targetPage);
-        await element.type(input);
+        await page.$eval('#main-input', (el, txt) => el.value = txt, puzzleInput);
     }
     {
         const targetPage = page;
