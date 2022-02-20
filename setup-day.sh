@@ -1,14 +1,14 @@
 #!/bin/bash
 
-YEAR=2021
+source ./.import-vars.sh
+
 DAY=$1
-echo $YEAR/$DAY
 
 mkdir ./day-$DAY
 mkdir ./day-$DAY/input
 mkdir ./day-$DAY/tests
 
-touch ./day-$DAY/input/input-day-$DAY.txt
+curl --cookie "session=$SESSION" "https://adventofcode.com/$YEAR/day/$DAY/input" > ./day-$DAY/input/input-day-$DAY.txt
 touch ./day-$DAY/tests/test-1.txt
 
 for FILE in ./templates/*;

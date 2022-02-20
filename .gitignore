@@ -4,3 +4,4 @@
 **/tests/*
 *.vscode/*
 node_modules
+.import-vars.sh
