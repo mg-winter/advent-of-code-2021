@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AOC 2021 Day 16 &mdash; Packet Decoder</title>
+    <script src="../util-v2.js" type="module"></script>
+    <script src="../front-superclasses.js" type="module"></script>
+    <script src="./day-16-front.js" type="module"></script>
+    <script src="../front-common.js" type="module"></script>
+    <link rel="stylesheet" href="./day-16.css">
+    <link rel="stylesheet" href="../common.css">
+
+</head>
+
+<body>
+    <main>
+        <h1>AOC 2021 Day 16 &mdash; Packet Decoder</h1>
+        <a href="https://adventofcode.com/2021/day/16" target="puzzle_reqs"><span> Puzzle requirements </span> <span
+                class="visually-hidden"> AOC 2021 Day 16 &mdash; Packet Decoder opens new tab</span> </a>
+        <form action="#" method="GET" aria-labelledby="hd-input" id="input">
+            <h2 id="hd-input">Input</h2>
+            <p>
+                <label for="main-input">Puzzle input</label>
+                <textarea name="main-input" id="main-input"></textarea>
+            </p>
+            <fieldset id="calc-params">
+                <legend>Calculation parameters</legend>
+                <p>
+                    There are no calculation parameters
+                </p>
+            </fieldset>
+            <fieldset id="calc-buttons">
+                <legend>Calculate</legend>
+                <button id="calculate-a" name="calculate" value="A" type="button">Part A</button>
+                <button id="calculate-b" name="calculate" value="B" type="button">Part B</button>
+            </fieldset>
+        </form>
+        <section aria-labelledby="hd-results" id="results-sect">
+            <h2 id="hd-results">Results</h2>
+            <h3>Part A result</h3>
+            <p class="result" id="result-a" aria-live="assertive"></p>
+            <h3>Part B result</h3>
+            <p class="result" id="result-b" aria-live="assertive"></p>
+        </section>
+        <section aria-labelledby="hd-visuals" id="visuals-sect">
+            <h2 id="hd-visuals">Visuals</h2>
+            <form action="#" method="get" aria-labelledby="hd-visual-controls" id="form-visuals">
+                <h3 id="hd-visual-controls">Visualisation details</h3>
+                <div id="calc-summary-cont">
+                    <p id="calc-summary"></p>
+                </div>
+                <fieldset id="visual-params">
+                    <legend>Visualization parameters</legend>
+                    <p>
+                        <label for="timeout">Time between states(ms)</label>
+                        <input id="timeout" name="timeout" type="number" min="0" step="250" value="1000" />
+                        <p>
+                            <label for="maxstate">Maximum state level (-1 to show all states)</label>
+                            <input id="maxstate" name="maxstate" type="number" min="-1" step="1" value="-1" />
+                        </p>
+                </fieldset>
+
+                <fieldset id="visual-controls">
+                    <legend>Animation controls</legend>
+                    <fieldset id="state-selector-cont">
+                        <legend>State selector</legend>
+                        <label for="state-selector" id="state-selector-label">State</label>
+                        <input type="number" id="state-selector" name="state-selector" value="0" min="0" />
+                        <button type="button" id="go-to-state">Go to state</button>
+                    </fieldset>
+                    <ul id="animation-action-buttons" aria-label="Animation action buttons" class="button-bar">
+                        <li>
+                            <button type="button" id="play-start">Play from start</button>
+                        </li>
+                        <li>
+                            <button type="button" id="resume">Resume</button>
+                        </li>
+                        <li>
+                            <button type="button" id="pause">Pause</button>
+                        </li>
+                    </ul>
+
+                </fieldset>
+            </form>
+
+            <h3>Animation</h3>
+            <div class="visuals-container" id="visuals-cont"></div>
+            <h3 id="hd-static-states">Static state list</h3>
+            <button id="btn-static-states">Load static states (may take long time)</button>
+            <div class="static-states-container" id="static-states-cont"></div>
+            <p id="static-states-status" aria-live="polite"></p>
+        </section>
+    </main>
+</body>
+
+</html>
