@@ -1,4 +1,4 @@
-const fs = require('fs');
+import { default as fs } from 'fs';
 
 day2A();
 day2B();

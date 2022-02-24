@@ -1,5 +1,5 @@
-const fs = require('fs');
-const util = require('../util');
+import { default as fs } from 'fs';
+import { default as util } from '../util.js';
 
 
 function getInput(filePath) {

@@ -1,4 +1,4 @@
-module.exports = {
+const util = {
     oneWithSign: oneWithSign,
     getOverlapRange: getOverlapRange,
     range: range,
@@ -109,3 +109,5 @@ function toDict(arr, keySelector, valueSelector) {
     }
     return res;
 }
+
+export default util;

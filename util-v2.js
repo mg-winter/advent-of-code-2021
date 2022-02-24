@@ -2,7 +2,10 @@ const MAX_TIMEOUT = 2147483647;
 const util = {
     isNullOrUndefined: isNullOrUndefined,
     oneWithSign: oneWithSign,
+    sumFromSameSignMin: sumFromSameSignMin,
+    sumNumbersBetween: sumNumbersBetween,
     getOverlapRange: getOverlapRange,
+    rangesOverlap: rangesOverlap,
     escapeRegex: escapeRegex,
     getNumOccurrences: getNumOccurrences,
     range: range,
@@ -33,8 +36,43 @@ function oneWithSign(number) {
 function isNullOrUndefined(obj) {
     return obj !== null && typeof(obj) != 'undefined';
 }
+
+function rangesOverlap(range1, range2) {
+   const [overlapStart, overlapEnd] = getOverlapRange(range1, range2);
+   return overlapStart <= overlapEnd;
+
+}
+
 function getOverlapRange(thisRange, otherRange) {
     return [Math.max(thisRange[0], otherRange[0]), Math.min(thisRange[1], otherRange[1])];
+}
+
+/**
+ * For positive numbers, returns sum(1...n)
+ * For negative numbers, returns sum(-1...n)
+ * For 0, returns 0.
+ * @param {int} n number to which to sum up.
+ */
+function sumFromSameSignMin(n) {
+    if (n == 0) {
+        return 0;
+    } else if (n > 0) {
+        return (n + 1) * n / 2;
+    } else {
+        return -1 * sumFromSameSignMin(n * -1);
+    }
+}
+
+function sumNumbersBetween(a, b) {
+    const [from, to] = [Math.min(a, b), Math.max(a, b)];
+
+    if (from <= 0 && to >= 0) {
+        return sumFromSameSignMin(to) - sumFromSameSignMin(from);
+    } else if (from >= 0) { // if from >= 0, to >= 0 as well
+        return sumFromSameSignMin(to) - sumFromSameSignMin(from - 1);
+    } else { //from and to are both below 0, and from is the one with the larger abs value
+        return sumFromSameSignMin(from) - sumFromSameSignMin(to + 1);
+    }
 }
 
 /** https://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript */

@@ -1,5 +1,4 @@
-const fs = require('fs');
-
+import { default as fs } from 'fs';
 
 function getInput(filePath) {
     try {

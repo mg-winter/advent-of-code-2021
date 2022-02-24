@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const util = require('../util');
+import { default as fs } from 'fs';
+import { default as path } from 'path';
+import { default as util } from '../util.js';
 
 class Basin {
     constructor(points) {
@@ -172,7 +172,7 @@ class HeightMap {
 
 function getInput(filePath) {
     try {
-        const curFile = process.mainModule.filename;
+        const curFile = new URL(import.meta.url).pathname;
         const fullPath = path.resolve(curFile, '..', filePath);
         return new HeightMap(fs.readFileSync(fullPath, 'utf-8').toString());
     } catch (ex) {

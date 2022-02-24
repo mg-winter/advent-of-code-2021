@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const util = require('../util');
+import { default as fs } from 'fs';
+import { default as path } from 'path';
+import { default as util } from '../util.js';
 
 class Reference {
     constructor(digitSegments) {
@@ -327,7 +327,7 @@ class Display {
 
 function getInput(filePath) {
     try {
-        const curFile = process.mainModule.filename;
+        const curFile = new URL(import.meta.url).pathname;
         const fullPath = path.resolve(curFile, '..', filePath);
         return fs.readFileSync(fullPath, 'utf-8').toString().split('\n').map(ln => new Display(ln, DIGIT_REFERENCE));
     } catch (ex) {

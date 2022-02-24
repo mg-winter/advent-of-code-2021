@@ -1,4 +1,5 @@
-const fs = require('fs');
+import { default as fs } from 'fs';
+
 const OVERLAP_STRATEGY = {
     BRUTE: 0,
     REGION: 1
@@ -469,8 +470,8 @@ function rangeArr({start = 0, end = 0, step = 1}) {
 
 function* unorderedPairs(arr) {
     const secondLast = arr.length - 1;
-    for (i = 0; i < secondLast; i++) {
-        for (j = i + 1; j < arr.length; j++) {
+    for (let i = 0; i < secondLast; i++) {
+        for (let j = i + 1; j < arr.length; j++) {
            
             yield [arr[i], arr[j]];
         }

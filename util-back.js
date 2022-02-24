@@ -1,7 +1,7 @@
-const fs = require('fs');
-const path = require('path');
+import {default as fs} from 'fs';
+import { default as path } from 'path';
 
-module.exports = {
+const util =  {
     getInput: getInput,
     getMainInput: getMainInput,
     getTestInput: getTestInput
@@ -9,7 +9,7 @@ module.exports = {
 
 function getInput(filePath) {
     try {
-        const curFile = process.mainModule.filename;
+        const curFile = new URL(import.meta.url).pathname;     
         const fullPath = path.resolve(curFile, '..', filePath);
         return fs.readFileSync(fullPath, 'utf-8').toString();
     } catch (ex) {
@@ -26,5 +26,9 @@ function getMainInput(day) {
 }
 
 function getTestInput(day, test) {
-    return getInput(`${getDir(day)}/tests/test-${test}.txt`);
+    const fileName = `${getDir(day)}/tests/test-${test}.txt`;
+    console.log(fileName);
+    return getInput(fileName);
 }
+
+export default util;

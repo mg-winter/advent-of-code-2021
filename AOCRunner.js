@@ -1,5 +1,5 @@
-const puppeteer = require('puppeteer');
-const utilBack = require('./util-back');
+import {default as puppeteer} from 'puppeteer';
+import {default as utilBack} from './util-back.js';
 
 (async () => {
 

@@ -5,7 +5,7 @@ import { default as util } from '../util-v2.js';
 
 class DayCalculatorRenameMe extends CalculationModel {
     constructor(str) {
-
+        super();
     }
     
     calculateARenameMe() {
@@ -21,7 +21,8 @@ class DayCalculatorControllerRenameMe extends CalculationController {
 
 }
 
-window.solution = {
+const container = (typeof window == 'undefined' ? {} : window);
+container.solution = {
     partA: function ({ model, calcParams }) {
         return model.calculateARenameMe();
     },
