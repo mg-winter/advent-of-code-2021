@@ -17,7 +17,7 @@ class DayCalculatorRenameMe extends CalculationModel {
     }
 }
 
-class DayCalculatorControllerRenameMe extends CalculationController {
+class DayCalculatorRenameMeController extends CalculationController {
 
 }
 
@@ -33,7 +33,7 @@ container.solution = {
         return new DayCalculatorRenameMe(str);
     },
     createController: function (model, parentElement, visualParams) {
-        return new DayCalculatorControllerRenameMe(model, parentElement, visualParams);
+        return new DayCalculatorRenameMeController(model, parentElement, visualParams);
     },
     hasVisual: false
 }
