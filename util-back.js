@@ -27,7 +27,6 @@ function getMainInput(day) {
 
 function getTestInput(day, test) {
     const fileName = `${getDir(day)}/tests/test-${test}.txt`;
-    console.log(fileName);
     return getInput(fileName);
 }
 

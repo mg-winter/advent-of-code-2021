@@ -76,10 +76,10 @@ export default class ParametrizedTest {
     assertEquals(actual, expected) {
         const msg = `${this.getResultDescription(actual)} does not equal ${this.getResultDescription(expected)}`
         if (ParametrizedTest.isPrimitive(actual)) {
-            assert.strictEqual(expected, actual, msg);
+            assert.strictEqual(actual, expected, msg);
         }
         else {
-            assert.deepStrictEqual(expected, actual, msg);
+            assert.deepStrictEqual(actual, expected, msg);
         }
     }
 

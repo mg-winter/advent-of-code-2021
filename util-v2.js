@@ -8,6 +8,7 @@ const util = {
     rangesOverlap: rangesOverlap,
     escapeRegex: escapeRegex,
     getNumOccurrences: getNumOccurrences,
+    getFirst: getFirst,
     range: range,
     rangeArr: rangeArr,
     unorderedPairs: unorderedPairs,
@@ -23,6 +24,7 @@ const util = {
     getCountsDict: getCountsDict,
     gettArraysDict: getArraysDict,
     distinct: distinct,
+    isPrimitive: isPrimitive,
     waitForEvent: waitForEvent,
     waitForTimeout: waitForTimeout,
     waitForPoll: waitForPoll,
@@ -93,6 +95,16 @@ function getNumOccurrences(str, substr) {
     return (matches || []).length;
 }
 
+function getFirst(iter, condition) {
+    const conditionFunc = condition ?? (n => true);
+    for (const item of iter) {
+        if (conditionFunc(item)) {
+            return item;
+        }
+    }
+    return null;
+}
+
 function* range({ start = 0, end = 0, step = 1 }) {
     const doneFunc = step > 0 ? i => i > end : i => i < end;
     for (let i = start; !doneFunc(i); i += step) {
@@ -106,8 +118,8 @@ function rangeArr({ start = 0, end = 0, step = 1 }) {
 
 function* unorderedPairs(arr) {
     const secondLast = arr.length - 1;
-    for (i = 0; i < secondLast; i++) {
-        for (j = i + 1; j < arr.length; j++) {
+    for (let i = 0; i < secondLast; i++) {
+        for (let j = i + 1; j < arr.length; j++) {
 
             yield [arr[i], arr[j]];
         }
@@ -223,6 +235,10 @@ function distinct(arr, primitiveConverter, valuePicker) {
 
     return Object.keys(arraysDict).map(k => valuePickerFunc(arraysDict[k]));
 
+}
+
+function isPrimitive(objectOrPrimitive) {
+    return Object(objectOrPrimitive) !== objectOrPrimitive;
 }
 
 function waitForEvent(target, eventName, maxWaitMs=2147483647) {
