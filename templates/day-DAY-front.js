@@ -3,7 +3,7 @@ import { default as util } from '../util-v2.js';
 
 
 
-class DayCalculatorRenameMe extends CalculationModel {
+export class DayCalculatorRenameMe extends CalculationModel {
     constructor(str) {
         super();
     }
@@ -17,7 +17,7 @@ class DayCalculatorRenameMe extends CalculationModel {
     }
 }
 
-class DayCalculatorRenameMeController extends CalculationController {
+export class DayCalculatorRenameMeController extends CalculationController {
 
 }
 

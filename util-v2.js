@@ -6,14 +6,17 @@ const util = {
     sumNumbersBetween: sumNumbersBetween,
     getOverlapRange: getOverlapRange,
     rangesOverlap: rangesOverlap,
+    isInRange: isInRange,
     escapeRegex: escapeRegex,
     getNumOccurrences: getNumOccurrences,
     getFirst: getFirst,
     range: range,
     rangeArr: rangeArr,
+    choose: choose,
     unorderedPairs: unorderedPairs,
     unorderedPairsArr: unorderedPairsArr,
     cartesian: cartesian,
+    cartesianNDimensions: cartesianNDimensions,
     cartesianArr: cartesianArr,
     distinctByStringNoNull: distinctByStringNoNull,
     toKeyValuePairs: toKeyValuePairs,
@@ -23,7 +26,9 @@ const util = {
     reduceToAggregateDict: reduceToAggregateDict,
     getCountsDict: getCountsDict,
     gettArraysDict: getArraysDict,
+    groupBy: groupBy,
     distinct: distinct,
+    getIntersection: getIntersection,
     isPrimitive: isPrimitive,
     waitForEvent: waitForEvent,
     waitForTimeout: waitForTimeout,
@@ -47,6 +52,10 @@ function rangesOverlap(range1, range2) {
 
 function getOverlapRange(thisRange, otherRange) {
     return [Math.max(thisRange[0], otherRange[0]), Math.min(thisRange[1], otherRange[1])];
+}
+
+function isInRange(num, [min, max]) {
+    return num >= min && num <= max;
 }
 
 /**
@@ -116,6 +125,19 @@ function rangeArr({ start = 0, end = 0, step = 1 }) {
     return [...range({ start: start, end: end, step: step })];
 }
 
+function choose(arr, numItems) {
+   if (numItems < 1 || numItems > arr.length) {
+       return [];
+   } else if (numItems === 1) {
+       return arr.map(item => [item]);
+   } else {
+       return arr.map((item, i) => {
+           const chooseOneFewer = choose(arr.slice(i +1), numItems - 1);
+           return chooseOneFewer.map(items => [item, ...items]);
+       }).flat(1);
+   }
+}
+
 function* unorderedPairs(arr) {
     const secondLast = arr.length - 1;
     for (let i = 0; i < secondLast; i++) {
@@ -141,6 +163,18 @@ function* cartesian(iter1, iter2) {
 
 function cartesianArr(iter1, iter2) {
     return [...cartesian(iter1, iter2)];
+}
+
+function cartesianNDimensions(...iters) {
+    if (iters.length === 0) {
+        return [];
+    } else if (iters.length === 1) {
+        return iters[0].map(item => [item]);
+    } else {
+        const otherIters = iters.slice(1);
+        const cartesianOtherIters = cartesianNDimensions(...otherIters);
+        return iters[0].map(item => cartesianOtherIters.map(items => [item, ...items])).flat(1);
+    }
 }
 
 function distinctByStringNoNull(arr) {
@@ -227,6 +261,11 @@ function getArraysDict(arr, keySelector) {
     return reduceToAggregateDict(arr, (items, item) => [...items, item], [], keySelector);
 } 
 
+function groupBy(arr, keySelector) {
+    const dict = getArraysDict(arr, keySelector);
+    return toKeyValuePairs(dict);
+}
+
 function distinct(arr, primitiveConverter, valuePicker) {
     const primitiveConverterFunc = primitiveConverter ?? (x => x ? x.toString() : '');
     const valuePickerFunc = valuePicker ?? (values => values[0]);
@@ -235,6 +274,10 @@ function distinct(arr, primitiveConverter, valuePicker) {
 
     return Object.keys(arraysDict).map(k => valuePickerFunc(arraysDict[k]));
 
+}
+
+function getIntersection(arr1, arr2) {
+    return arr1.filter(o => arr2.includes(o));
 }
 
 function isPrimitive(objectOrPrimitive) {
