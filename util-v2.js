@@ -4,6 +4,7 @@ const util = {
     oneWithSign: oneWithSign,
     sumFromSameSignMin: sumFromSameSignMin,
     sumNumbersBetween: sumNumbersBetween,
+    getBinary: getBinary,
     getOverlapRange: getOverlapRange,
     rangesOverlap: rangesOverlap,
     isInRange: isInRange,
@@ -38,6 +39,10 @@ const util = {
 
 function oneWithSign(number) {
     return number / Math.abs(number);
+}
+
+function getBinary(arr) {
+    return parseInt(arr.join(''), 2);
 }
 
 function isNullOrUndefined(obj) {
